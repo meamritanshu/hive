@@ -1,0 +1,1 @@
+"""HiveCore configuration package."""

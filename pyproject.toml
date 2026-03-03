@@ -1,0 +1,123 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "hivecore"
+version = "0.1.0"
+description = "HiveCore - A local-first agentic workstation framework with long-term memory, extensible skills, scheduled automation, and multi-channel access."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10,<3.14"
+authors = [
+    { name = "HiveCore Team" },
+]
+keywords = [
+    "agent",
+    "ai",
+    "llm",
+    "workstation",
+    "automation",
+    "memory",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "litellm>=1.30.0",
+    "typer>=0.9.0",
+    "rich>=13.0.0",
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.27.0",
+    "websockets>=12.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    "apscheduler>=3.10.0",
+    "aiosqlite>=0.19.0",
+    "tomli>=2.0.0;python_version<'3.11'",
+    "tomli-w>=1.0.0",
+    "httpx>=0.26.0",
+    "jinja2>=3.1.0",
+    "watchdog>=3.0.0",
+    "rank-bm25>=0.2.2",
+    "numpy>=1.24.0",
+]
+
+[project.optional-dependencies]
+chromadb = ["chromadb>=0.4.0"]
+discord = ["discord.py>=2.3.0"]
+telegram = ["python-telegram-bot>=20.0"]
+imessage = ["pypush>=0.5.0"]
+embeddings-local = ["sentence-transformers>=2.2.0"]
+all = [
+    "chromadb>=0.4.0",
+    "discord.py>=2.3.0",
+    "python-telegram-bot>=20.0",
+    "sentence-transformers>=2.2.0",
+]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.2.0",
+    "mypy>=1.8.0",
+]
+
+[project.scripts]
+hivecore = "hivecore.cli.main:app"
+
+[project.urls]
+Homepage = "https://github.com/hivecore/hivecore"
+Documentation = "https://hivecore.dev/docs"
+Repository = "https://github.com/hivecore/hivecore"
+Issues = "https://github.com/hivecore/hivecore/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["hivecore"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+
+[tool.coverage.run]
+source = ["hivecore"]
+omit = [
+    "hivecore/__main__.py",
+    "hivecore/channels/discord_bot.py",
+    "hivecore/channels/base.py",
+    "hivecore/channels/router.py",
+    "hivecore/web/api/app.py",
+    "hivecore/cli/*",
+    "hivecore/core/llm/litellm_provider.py",
+    "hivecore/automation/scheduler.py",
+    "hivecore/automation/heartbeat.py",
+    "hivecore/runtime/lifecycle.py",
+    "hivecore/runtime/config.py",
+    "hivecore/utils/logging.py",
+    "hivecore/utils/events.py",
+    "hivecore/skills/builtin/news_digest.py",
+]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_covered = false
