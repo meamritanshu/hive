@@ -50,7 +50,8 @@ HiveCore is a **privacy-focused personal AI agent** that runs entirely on your m
 | **Hybrid Retrieval** | BM25 keyword + vector similarity combined via Reciprocal Rank Fusion |
 | **Extensible Skills** | Auto-discovered Python skills with hot-reload. No restart needed. |
 | **Scheduled Automation** | Cron-based scheduling via APScheduler for recurring tasks |
-| **Web Console** | React + TypeScript dashboard with chat, memory browser, skill manager, and scheduler |
+| **Web Console** | React + TypeScript dashboard with chat, memory browser, skill manager, scheduler, and **guided config UI** |
+| **Guided Configuration** | Provider picker (Gemini, OpenAI, Anthropic, Ollama) with model dropdowns, API keys, and Apply & Restart |
 | **Multi-Channel** | Interact via Web, CLI, Discord, or Telegram |
 | **Git-Synced Memory** | Automatic git versioning of your memory files |
 | **Sandboxed Execution** | Skills run in subprocess isolation (Docker support planned) |
@@ -66,24 +67,35 @@ HiveCore is a **privacy-focused personal AI agent** that runs entirely on your m
 pip install hivecore
 ```
 
-### 2. Set your API key
+### 2. Start the workstation
 
 ```bash
+python -m hivecore start
+```
+
+> **Tip:** If `hivecore` is not in your PATH, use `python -m hivecore start`.
+
+### 3. Configure your LLM provider
+
+Navigate to **http://127.0.0.1:8088/config** and use the **LLM Provider** picker to select your provider, model, and API key — then click **Apply & Restart**.
+
+| Provider | Setup |
+|----------|-------|
+| **Google Gemini** | Get a key at [aistudio.google.com](https://aistudio.google.com) |
+| **OpenAI** | Get a key at [platform.openai.com](https://platform.openai.com) |
+| **Anthropic** | Get a key at [console.anthropic.com](https://console.anthropic.com) |
+| **Ollama (local)** | Install from [ollama.com](https://ollama.com) — no API key needed |
+
+Alternatively, set via environment variables:
+```bash
+export GEMINI_API_KEY=AIza...
 export OPENAI_API_KEY=sk-...
-# Or any LiteLLM-supported provider:
-# export ANTHROPIC_API_KEY=...
-# export GEMINI_API_KEY=...
+export ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-### 3. Start the workstation
+### 4. Chat
 
-```bash
-hivecore start
-```
-
-### 4. Open the web console
-
-Navigate to **http://127.0.0.1:8088** — or use the CLI:
+Navigate to **http://127.0.0.1:8088/chat** — or use the CLI:
 
 ```bash
 hivecore chat
@@ -178,24 +190,48 @@ hivecore schedule add --name "morning_briefing" --skill morning_briefing --cron 
 
 ## Configuration
 
-HiveCore uses `~/.hivecore/config.toml` for all settings. Examples:
+### Web UI (recommended)
 
-**Use a local Ollama model:**
+Open **http://127.0.0.1:8088/config** for the guided configuration interface:
+
+- **LLM Provider** — click a provider card (Gemini, OpenAI, Anthropic, Ollama), pick a model from the dropdown, enter your API key, and click **Apply & Restart**
+- **Memory, Skills, Agent, Scheduler** — all settings exposed as editable fields with live validation
+- Changes are saved to `~/.hivecore/config.toml` and applied immediately
+
+### Manual — `~/.hivecore/config.toml`
+
+**Google Gemini:**
 ```toml
 [llm]
-provider = "ollama"
-model = "llama3"
-api_base = "http://localhost:11434"
+provider = "google"
+model = "gemini/gemini-2.0-flash"
+api_key = "AIza..."
 ```
 
-**Use Claude:**
+**OpenAI:**
+```toml
+[llm]
+provider = "openai"
+model = "gpt-4o"
+api_key = "sk-..."
+```
+
+**Anthropic Claude:**
 ```toml
 [llm]
 provider = "anthropic"
-model = "claude-3-5-sonnet-20241022"
+model = "anthropic/claude-3-5-sonnet-20241022"
+api_key = "sk-ant-..."
 ```
 
-**Use local embeddings (no API key):**
+**Local Ollama (no API key):**
+```toml
+[llm]
+provider = "ollama"
+model = "ollama/llama3"
+```
+
+**Local embeddings:**
 ```toml
 [memory]
 embedding_provider = "local"
@@ -226,7 +262,18 @@ curl -X POST http://127.0.0.1:8088/api/chat \
 # Search memory
 curl "http://127.0.0.1:8088/api/memory/search?q=python&top_k=5"
 
-# WebSocket streaming
+# Get current config (sensitive fields redacted)
+curl http://127.0.0.1:8088/api/config
+
+# Update a config section (e.g. change LLM model)
+curl -X PATCH http://127.0.0.1:8088/api/config \
+  -H "Content-Type: application/json" \
+  -d '{"section": "llm", "updates": {"model": "gemini/gemini-2.0-flash"}}'
+
+# Restart the server
+curl -X POST http://127.0.0.1:8088/api/restart
+
+# WebSocket streaming chat
 echo '{"message": "Tell me a joke"}' | websocat ws://127.0.0.1:8088/ws/chat
 ```
 
