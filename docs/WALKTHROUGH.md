@@ -1,6 +1,6 @@
 # HiveCore — Walkthrough
 
-> A guided tour of the codebase: what HiveCore is, how it works, and every architectural change made. Last updated: 2026-03-04. All 5 fixes from PROPOSED_FIXES.md are complete. Coverage target (80%) met. See `docs/STATUS.md` for the live task tracker.
+> A guided tour of the codebase: what HiveCore is, how it works, and every architectural change made. Last updated: 2026-03-04 (session 4). All 5 fixes from PROPOSED_FIXES.md are complete. Coverage target (80%) met. See `docs/STATUS.md` for the live task tracker.
 
 ---
 
@@ -425,7 +425,7 @@ python -m pytest tests/unit/test_agent.py -v
 
 ## 11. What's Next
 
-See `docs/STATUS.md` for the full task list. Phase 2 (coverage + CI) is complete.
+See `docs/STATUS.md` for the full task list. Phase 2 (coverage + CI) and Phase 3 (interactive Config panel) are complete.
 
 ### Optional Stretch Goals (not required — 80% target already met)
 
@@ -440,15 +440,15 @@ See `docs/STATUS.md` for the full task list. Phase 2 (coverage + CI) is complete
 | `memory/git_sync.py` | 73% | Git commit / push error paths |
 | `core/tools/registry.py` | 78% | `list_by_category`, `unregister` |
 
-### Phase 3 — Future Features
+### Phase 4 — Future Features
 
-Move to Phase 3 features from `FUTURE_ROADMAP.md` (multi-agent, MCP, skill marketplace).
+Move to Phase 4 features from `FUTURE_ROADMAP.md` (multi-agent, MCP, skill marketplace).
 
 ---
 
 ## 12. Session Close — State Snapshot
 
-> Recorded: 2026-03-04 (end of session 2)
+> Recorded: 2026-03-04 (end of session 4)
 
 ### What was accomplished
 
@@ -473,6 +473,22 @@ Move to Phase 3 features from `FUTURE_ROADMAP.md` (multi-agent, MCP, skill marke
 | Test count | 352 passed, 1 skipped |
 | Overall coverage | **80.84%** ✅ (target: 80%) |
 
+#### Session 3 — Interactive Config Panel
+| Category | Detail |
+|----------|--------|
+| Backend | `PATCH /api/config` endpoint in `hivecore/web/api/app.py` |
+| Frontend | `ConfigPage.tsx` fully rewritten with live editing, per-section save/reset, unsaved badges, password show/hide |
+| API client | `updateConfig()` added to `frontend/src/lib/api.ts` |
+| Static rebuild | `npm run build` → `hivecore/web/static/` updated |
+
+#### Session 4 — Port Fix & Startup Verification
+| Category | Detail |
+|----------|--------|
+| Issue | `[WinError 10048]` — port 8088 already bound by a stale HiveCore process |
+| Fix | Found PID via `netstat -ano \| findstr :8088`, killed with `taskkill /PID <pid> /F` |
+| Architecture confirmed | `WebSettings.port`, `start_workstation(port=)`, `hivecore start --port` all already wired end-to-end |
+| Port override | `[web] port = <number>` in `~/.hivecore/config.toml` or `hivecore start --port <number>` at runtime |
+
 ### Key modules improved
 | Module | Before | After |
 |--------|--------|-------|
@@ -485,9 +501,9 @@ Move to Phase 3 features from `FUTURE_ROADMAP.md` (multi-agent, MCP, skill marke
 
 ### Where to resume
 
-Phase 2 is complete. Options:
+Sessions 1–4 are complete. Options:
 - **Stretch goals**: Fill remaining coverage gaps (see STATUS.md "Remaining Gaps" table) to push toward 90%+
-- **Phase 3**: Begin feature work from `FUTURE_ROADMAP.md` (multi-agent, MCP, skill marketplace)
+- **Phase 4**: Begin feature work from `FUTURE_ROADMAP.md` (multi-agent, MCP, skill marketplace)
 
 ### Environment notes
 
@@ -495,3 +511,5 @@ Phase 2 is complete. Options:
 - `pip install -e ".[dev]"` installs all deps including `rank_bm25`, `aiosqlite`, `tomli-w`, `pytest-asyncio`, `pytest-cov`
 - `duckdb` and `chromadb` are optional — tests skip gracefully without them
 - Run tests: `python -m pytest tests/ --cov=hivecore --cov-report=term-missing`
+- Start server: `hivecore start` (or `hivecore start --port 9000` to use a different port)
+- If port 8088 is already in use: `netstat -ano | findstr :8088` → `taskkill /PID <pid> /F`

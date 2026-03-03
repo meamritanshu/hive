@@ -1,7 +1,7 @@
 # HiveCore — Project Status
 
-> Last updated: 2026-03-04
-> Current test count: 352 passed, 1 skipped | Overall coverage: 80.84% (target: 80%)
+> Last updated: 2026-03-04 (session 4)
+> Current test count: 352 passed, 1 skipped | Overall coverage: 80.80% (target: 80%)
 
 ---
 
@@ -20,14 +20,20 @@
 
 **Session 2** raised coverage from 50% to 80.84%, added 6 new test files (~159 new tests), and created the GitHub Actions CI workflow.
 
+**Session 3** made the web console Config page fully interactive — users can now edit and save all HiveCore settings from the browser.
+
+**Session 4** diagnosed and fixed a port conflict (`[WinError 10048]`) when starting the server. Confirmed that `WebSettings` already had `host`/`port` fields, `lifecycle.py` already accepted those parameters, and `hivecore start` already had `--host`/`--port` CLI flags — the architecture was complete. Killed the stale process on port 8088 so the server starts cleanly again.
+
 | Milestone | Result |
 |-----------|--------|
 | PROPOSED_FIXES.md fixes implemented | 5 / 5 ✅ |
 | Total tests | 352 passed, 1 skipped |
-| Overall coverage | 80.84% ✅ |
+| Overall coverage | 80.80% ✅ |
 | Coverage target (`fail_under`) | 80% — enforced in `pyproject.toml` |
 | CI/CD pipeline | ✅ `.github/workflows/ci.yml` (Python 3.11 + 3.12 matrix) |
-| Next session start point | Optional stretch goals or Phase 3 features |
+| Interactive config panel | ✅ `PATCH /api/config` + rewritten `ConfigPage.tsx` |
+| Port configurable via settings + CLI | ✅ `WebSettings.host/port`, `--host`/`--port` flags |
+| Next session start point | Optional stretch goals or Phase 4 features |
 
 ---
 
@@ -185,7 +191,7 @@
 |------|--------|-------|
 | Measure baseline coverage | ✅ | Session 1: 50% — 3230 stmts, 1617 missed |
 | Add `[tool.coverage]` to `pyproject.toml` | ✅ | Omits infra modules; `fail_under = 80` enforced |
-| Reach 80%+ overall coverage | ✅ | 80.84% achieved |
+| Reach 80%+ overall coverage | ✅ | 80.80% (352 passed, 1 skipped) |
 
 ### New Tests Written (session 2)
 
@@ -236,6 +242,31 @@ These modules require live external services or complex runtime setup and are in
 
 ---
 
+## Phase 3 — Web Console Enhancements
+
+### Session 3 — Interactive Config Panel ✅
+
+| Task | Status | File(s) |
+|------|--------|---------|
+| `PATCH /api/config` endpoint | ✅ | `hivecore/web/api/app.py` |
+| Validate field names + Pydantic re-parse on save | ✅ | `hivecore/web/api/app.py` |
+| Persist changes to `~/.hivecore/config.toml` via `save_settings()` | ✅ | `hivecore/web/api/app.py` |
+| Handle `section="root"` for top-level scalars | ✅ | `hivecore/web/api/app.py` |
+| Handle `section="channels"` nested sub-models | ✅ | `hivecore/web/api/app.py` |
+| Redact `api_key` / `token` in PATCH response | ✅ | `hivecore/web/api/app.py` |
+| `updateConfig()` in `src/lib/api.ts` | ✅ | `frontend/src/lib/api.ts` |
+| Rewrite `ConfigPage.tsx` as interactive form | ✅ | `frontend/src/pages/ConfigPage.tsx` |
+| Boolean toggle switches | ✅ | `frontend/src/pages/ConfigPage.tsx` |
+| Number inputs with type coercion | ✅ | `frontend/src/pages/ConfigPage.tsx` |
+| Password inputs with show/hide for sensitive fields | ✅ | `frontend/src/pages/ConfigPage.tsx` |
+| Array / list fields as comma-separated textarea | ✅ | `frontend/src/pages/ConfigPage.tsx` |
+| Per-section Save + Reset buttons | ✅ | `frontend/src/pages/ConfigPage.tsx` |
+| "unsaved" badge, spinner, "✓ saved" / error feedback | ✅ | `frontend/src/pages/ConfigPage.tsx` |
+| Reload button to re-fetch config from disk | ✅ | `frontend/src/pages/ConfigPage.tsx` |
+| Frontend rebuilt (`npm run build`) | ✅ | `hivecore/web/static/` |
+
+---
+
 ## Phase 3 — Future Roadmap (not started)
 
 > See `FUTURE_ROADMAP.md` for full details.
@@ -257,6 +288,20 @@ These modules require live external services or complex runtime setup and are in
 
 ---
 
+## Session 4 — Port Configuration & Startup Fix
+
+| Task | Status | Notes |
+|------|--------|-------|
+| Diagnose `[WinError 10048]` port conflict | ✅ | Stale process from previous run held port 8088 |
+| Kill stale process on port 8088 | ✅ | `taskkill /PID <pid> /F` via `netstat -ano` lookup |
+| Confirm `WebSettings.host/port` already in settings model | ✅ | `hivecore/config/settings.py` — `WebSettings.port: int = 8088` |
+| Confirm `lifecycle.py` already accepts `host`/`port` params | ✅ | `start_workstation(host, port, ...)` passes to `_start_web_server` |
+| Confirm `hivecore start` already has `--host`/`--port` CLI flags | ✅ | `hivecore/cli/main.py` — `typer.Option("127.0.0.1")` / `typer.Option(8088)` |
+| Change port via config file | ✅ | Set `[web] port = <number>` in `~/.hivecore/config.toml` |
+| Override port at runtime | ✅ | `hivecore start --port 9000` |
+
+---
+
 ## Known Issues / Gotchas
 
 - **Windows file locking**: Calling `pytest.skip()` inside a `with tempfile.TemporaryDirectory()` block before `await mgr.close()` causes `PermissionError` because SQLite keeps the file open. Always close the manager before skipping.
@@ -267,3 +312,4 @@ These modules require live external services or complex runtime setup and are in
 - **`tomli-w`**: Was missing from dev environment; install with `pip install tomli-w`.
 - **`SubprocessProvider`**: Is an alias for `SubprocessSandbox` at the bottom of `subprocess.py`.
 - **`_settings_to_dict`**: Replaced with recursive `_clean_for_toml()` that strips `None` values (TOML has no null type).
+- **Port conflict `[WinError 10048]`**: Occurs when a previous HiveCore process is still holding port 8088. Find the PID with `netstat -ano | findstr :8088` and kill it with `taskkill /PID <pid> /F`. To avoid future conflicts, set a different port in `~/.hivecore/config.toml` under `[web]` or pass `--port` to `hivecore start`.

@@ -1,2 +1,34 @@
 /.coverage
 /.pytest_cache
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+
+# Node / Vite
+frontend/node_modules/
+frontend/.vite/
+frontend/dist/
+
+# Screenshots / temp files
+*.jpg
+*.jpeg
+*.png
+*.webp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

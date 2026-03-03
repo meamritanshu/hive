@@ -59,6 +59,20 @@ export async function getConfig(): Promise<ConfigData> {
   return request("/config");
 }
 
+export async function updateConfig(
+  section: string,
+  updates: Record<string, unknown>
+): Promise<{ section: string; updated: unknown }> {
+  return request("/config", {
+    method: "PATCH",
+    body: JSON.stringify({ section, updates }),
+  });
+}
+
+export async function restartServer(): Promise<{ status: string }> {
+  return request("/restart", { method: "POST" });
+}
+
 // ── Scheduler ──
 export async function getScheduledJobs(): Promise<ScheduledJob[]> {
   return request("/scheduler/jobs");
