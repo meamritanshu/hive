@@ -9,10 +9,11 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import Any, AsyncIterator, Optional
+from collections.abc import AsyncIterator
+from typing import Any
 
 from hivecore.core.llm.base import LLMProvider
-from hivecore.core.messages import Message, Role, ToolCall
+from hivecore.core.messages import Message, ToolCall
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ class LiteLLMProvider(LLMProvider):
     async def complete(
         self,
         messages: list[Message],
-        tools: Optional[list[dict[str, Any]]] = None,
+        tools: list[dict[str, Any]] | None = None,
         **kwargs: Any,
     ) -> Message:
         """Send messages to the LLM via LiteLLM and get a response."""
@@ -94,7 +95,7 @@ class LiteLLMProvider(LLMProvider):
     async def complete_stream(
         self,
         messages: list[Message],
-        tools: Optional[list[dict[str, Any]]] = None,
+        tools: list[dict[str, Any]] | None = None,
         **kwargs: Any,
     ) -> AsyncIterator[str]:
         """Stream response tokens from the LLM via LiteLLM."""

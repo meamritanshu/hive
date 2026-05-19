@@ -1,6 +1,5 @@
 """Schedule CLI command handler."""
 
-from typing import Optional
 
 from rich.console import Console
 from rich.table import Table
@@ -10,8 +9,8 @@ console = Console()
 
 def handle_schedule(
     list_jobs: bool = False,
-    add: Optional[str] = None,
-    remove: Optional[str] = None,
+    add: str | None = None,
+    remove: str | None = None,
 ) -> None:
     """Handle scheduled task management commands."""
     import json

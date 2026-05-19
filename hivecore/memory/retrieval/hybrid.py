@@ -7,11 +7,9 @@ semantic vector search and keyword-based BM25 search.
 from __future__ import annotations
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from rank_bm25 import BM25Okapi
-
-from hivecore.memory.types import MemorySearchResult
 
 logger = logging.getLogger(__name__)
 
@@ -101,7 +99,7 @@ class BM25Index:
     def __init__(self) -> None:
         self._documents: list[dict[str, Any]] = []
         self._tokenized: list[list[str]] = []
-        self._bm25: Optional[BM25Okapi] = None
+        self._bm25: BM25Okapi | None = None
 
     def build(self, documents: list[dict[str, Any]]) -> None:
         """Build the BM25 index from a list of documents.

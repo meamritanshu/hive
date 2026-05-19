@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import logging
 import time
-from typing import Any, Optional
+from typing import Any
 
 from hivecore.memory.types import MemoryEntry, MemorySearchResult, MemoryType
 
@@ -32,7 +32,7 @@ class VectorMemory:
 
     def __init__(
         self,
-        store: "BaseVectorStore",
+        store: BaseVectorStore,
         embedding_fn: Any = None,
     ) -> None:
         self._store = store
@@ -80,7 +80,7 @@ class VectorMemory:
         self,
         query: str,
         top_k: int = 10,
-        memory_type: Optional[MemoryType] = None,
+        memory_type: MemoryType | None = None,
         min_relevance: float = 0.0,
     ) -> list[MemorySearchResult]:
         """Search for relevant memories using semantic similarity.
@@ -181,7 +181,7 @@ class VectorMemory:
         return await self._store.delete(entry_id)
 
     async def list_all(
-        self, memory_type: Optional[MemoryType] = None, limit: int = 100
+        self, memory_type: MemoryType | None = None, limit: int = 100
     ) -> list[MemoryEntry]:
         """List all memory entries, optionally filtered by type.
 

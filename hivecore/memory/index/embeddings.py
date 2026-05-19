@@ -7,7 +7,7 @@ embeddings (OpenAI, etc.) via LiteLLM.
 from __future__ import annotations
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ class EmbeddingGenerator:
         self,
         provider: str = "openai",
         model: str = "text-embedding-3-small",
-        api_key: Optional[str] = None,
+        api_key: str | None = None,
     ) -> None:
         self.provider = provider
         self.model = model

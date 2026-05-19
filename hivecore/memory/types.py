@@ -8,7 +8,7 @@ from __future__ import annotations
 import time
 import uuid
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -29,7 +29,7 @@ class MemoryEntry(BaseModel):
     id: str = Field(default_factory=lambda: uuid.uuid4().hex)
     type: MemoryType = Field(default=MemoryType.EPISODIC)
     content: str = Field(description="The memory content.")
-    summary: Optional[str] = Field(
+    summary: str | None = Field(
         default=None, description="Compressed summary of the memory."
     )
     metadata: dict[str, Any] = Field(default_factory=dict)
@@ -39,7 +39,7 @@ class MemoryEntry(BaseModel):
         default=0.5, ge=0.0, le=1.0,
         description="Importance score (0-1)."
     )
-    embedding: Optional[list[float]] = Field(
+    embedding: list[float] | None = Field(
         default=None, description="Vector embedding of the content."
     )
     created_at: float = Field(default_factory=time.time)

@@ -9,7 +9,7 @@ from __future__ import annotations
 import time
 import uuid
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -39,7 +39,7 @@ class ToolResult(BaseModel):
     call_id: str = Field(description="ID of the original tool call.")
     name: str = Field(description="Name of the tool that was executed.")
     output: str = Field(description="Tool execution output.")
-    error: Optional[str] = Field(default=None, description="Error message if execution failed.")
+    error: str | None = Field(default=None, description="Error message if execution failed.")
     execution_time: float = Field(default=0.0, description="Execution time in seconds.")
 
 
@@ -60,7 +60,7 @@ class Message(BaseModel):
     tool_calls: list[ToolCall] = Field(
         default_factory=list, description="Tool calls requested by the assistant."
     )
-    tool_result: Optional[ToolResult] = Field(
+    tool_result: ToolResult | None = Field(
         default=None, description="Result from a tool execution."
     )
     metadata: dict[str, Any] = Field(
@@ -82,7 +82,7 @@ class Message(BaseModel):
         return cls(role=Role.USER, content=content, metadata=metadata)
 
     @classmethod
-    def assistant(cls, content: str, tool_calls: Optional[list[ToolCall]] = None) -> Message:
+    def assistant(cls, content: str, tool_calls: list[ToolCall] | None = None) -> Message:
         """Create an assistant message."""
         return cls(role=Role.ASSISTANT, content=content, tool_calls=tool_calls or [])
 

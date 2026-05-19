@@ -1,6 +1,5 @@
 """Config CLI command handler."""
 
-from typing import Optional
 
 from rich.console import Console
 from rich.table import Table
@@ -11,7 +10,7 @@ console = Console()
 def handle_config(
     show: bool = False,
     init: bool = False,
-    set_value: Optional[str] = None,
+    set_value: str | None = None,
 ) -> None:
     """Handle config subcommand."""
     from hivecore.config.settings import get_settings, save_settings

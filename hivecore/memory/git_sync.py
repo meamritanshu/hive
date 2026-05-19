@@ -18,7 +18,6 @@ from __future__ import annotations
 import asyncio
 import logging
 from pathlib import Path
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +50,7 @@ class MemoryGitSync:
     def __init__(self, data_dir: Path, auto_push: bool = False) -> None:
         self.data_dir = Path(data_dir).expanduser().resolve()
         self.auto_push = auto_push
-        self._git_available: Optional[bool] = None  # None = not checked yet
+        self._git_available: bool | None = None  # None = not checked yet
 
     # ------------------------------------------------------------------
     # Public interface

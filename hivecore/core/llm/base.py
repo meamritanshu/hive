@@ -8,7 +8,8 @@ for custom implementations.
 from __future__ import annotations
 
 import abc
-from typing import Any, AsyncIterator, Optional
+from collections.abc import AsyncIterator
+from typing import Any
 
 from hivecore.core.messages import Message
 
@@ -23,8 +24,8 @@ class LLMProvider(abc.ABC):
     def __init__(
         self,
         model: str,
-        api_key: Optional[str] = None,
-        api_base: Optional[str] = None,
+        api_key: str | None = None,
+        api_base: str | None = None,
         temperature: float = 0.7,
         max_tokens: int = 4096,
         timeout: int = 120,
@@ -42,7 +43,7 @@ class LLMProvider(abc.ABC):
     async def complete(
         self,
         messages: list[Message],
-        tools: Optional[list[dict[str, Any]]] = None,
+        tools: list[dict[str, Any]] | None = None,
         **kwargs: Any,
     ) -> Message:
         """Send messages to the LLM and get a complete response.
@@ -61,7 +62,7 @@ class LLMProvider(abc.ABC):
     async def complete_stream(
         self,
         messages: list[Message],
-        tools: Optional[list[dict[str, Any]]] = None,
+        tools: list[dict[str, Any]] | None = None,
         **kwargs: Any,
     ) -> AsyncIterator[str]:
         """Send messages and stream the response token by token.

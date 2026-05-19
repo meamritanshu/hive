@@ -1,6 +1,5 @@
 """HiveCore CLI - main entry point."""
 
-from typing import Optional
 
 import typer
 from rich.console import Console
@@ -24,7 +23,7 @@ def version_callback(value: bool) -> None:
 
 @app.callback()
 def main(
-    version: Optional[bool] = typer.Option(
+    version: bool | None = typer.Option(
         None, "--version", "-v", help="Show version and exit.", callback=version_callback,
         is_eager=True,
     ),
@@ -37,7 +36,7 @@ def start(
     host: str = typer.Option("127.0.0.1", "--host", "-h", help="Host to bind the web console."),
     port: int = typer.Option(8088, "--port", "-p", help="Port for the web console."),
     no_web: bool = typer.Option(False, "--no-web", help="Start without the web console."),
-    config: Optional[str] = typer.Option(None, "--config", "-c", help="Path to config file."),
+    config: str | None = typer.Option(None, "--config", "-c", help="Path to config file."),
 ) -> None:
     """Start the HiveCore workstation."""
     import asyncio
@@ -57,8 +56,8 @@ def start(
 
 @app.command()
 def chat(
-    message: Optional[str] = typer.Argument(None, help="Message to send to the agent."),
-    model: Optional[str] = typer.Option(None, "--model", "-m", help="LLM model to use."),
+    message: str | None = typer.Argument(None, help="Message to send to the agent."),
+    model: str | None = typer.Option(None, "--model", "-m", help="LLM model to use."),
 ) -> None:
     """Start an interactive chat session with the agent."""
     import asyncio
@@ -72,7 +71,7 @@ def chat(
 def config(
     show: bool = typer.Option(False, "--show", "-s", help="Show current configuration."),
     init: bool = typer.Option(False, "--init", help="Initialize configuration interactively."),
-    set_value: Optional[str] = typer.Option(
+    set_value: str | None = typer.Option(
         None, "--set", help="Set a config value (key=value)."
     ),
 ) -> None:
@@ -85,8 +84,8 @@ def config(
 @app.command(name="skill")
 def skill_cmd(
     list_skills: bool = typer.Option(False, "--list", "-l", help="List installed skills."),
-    install: Optional[str] = typer.Option(None, "--install", "-i", help="Install a skill."),
-    info: Optional[str] = typer.Option(None, "--info", help="Show skill details."),
+    install: str | None = typer.Option(None, "--install", "-i", help="Install a skill."),
+    info: str | None = typer.Option(None, "--info", help="Show skill details."),
 ) -> None:
     """Manage agent skills."""
     from hivecore.cli.commands.skill_cmd import handle_skill
@@ -97,8 +96,8 @@ def skill_cmd(
 @app.command(name="schedule")
 def schedule_cmd(
     list_jobs: bool = typer.Option(False, "--list", "-l", help="List scheduled jobs."),
-    add: Optional[str] = typer.Option(None, "--add", help="Add a scheduled job (JSON)."),
-    remove: Optional[str] = typer.Option(None, "--remove", help="Remove a job by ID."),
+    add: str | None = typer.Option(None, "--add", help="Add a scheduled job (JSON)."),
+    remove: str | None = typer.Option(None, "--remove", help="Remove a job by ID."),
 ) -> None:
     """Manage scheduled tasks and automation."""
     from hivecore.cli.commands.schedule_cmd import handle_schedule

@@ -15,7 +15,7 @@ import logging
 import sys
 import textwrap
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from hivecore.runtime.sandbox.base import ExecutionProvider
 
@@ -40,7 +40,7 @@ class SubprocessSandbox(ExecutionProvider):
         self,
         timeout: int = 300,
         max_memory_mb: int = 512,
-        working_dir: Optional[Path] = None,
+        working_dir: Path | None = None,
     ) -> None:
         self.timeout = timeout
         self.max_memory_mb = max_memory_mb
@@ -87,7 +87,7 @@ class SubprocessSandbox(ExecutionProvider):
         print(json.dumps(output))
         """)
 
-        process: Optional[asyncio.subprocess.Process] = None
+        process: asyncio.subprocess.Process | None = None
         try:
             process = await asyncio.create_subprocess_exec(
                 sys.executable, "-c", script,
@@ -145,7 +145,7 @@ class SubprocessSandbox(ExecutionProvider):
         Returns:
             Dict with execution results.
         """
-        process: Optional[asyncio.subprocess.Process] = None
+        process: asyncio.subprocess.Process | None = None
         try:
             process = await asyncio.create_subprocess_exec(
                 sys.executable, "-c", code,

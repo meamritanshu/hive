@@ -10,7 +10,8 @@ import abc
 import inspect
 import json
 import logging
-from typing import Any, Callable, Optional, get_type_hints
+from collections.abc import Callable
+from typing import Any, get_type_hints
 
 from pydantic import BaseModel, Field
 
@@ -24,8 +25,8 @@ class ToolParameter(BaseModel):
     type: str = "string"
     description: str = ""
     required: bool = True
-    default: Optional[Any] = None
-    enum: Optional[list[str]] = None
+    default: Any | None = None
+    enum: list[str] | None = None
 
 
 class ToolDefinition(BaseModel):
@@ -114,8 +115,8 @@ class FunctionTool(BaseTool):
     def __init__(
         self,
         func: Callable[..., Any],
-        name: Optional[str] = None,
-        description: Optional[str] = None,
+        name: str | None = None,
+        description: str | None = None,
         category: str = "general",
         requires_confirmation: bool = False,
     ) -> None:
@@ -136,7 +137,14 @@ class FunctionTool(BaseTool):
             if param_name in ("self", "cls"):
                 continue
 
-            param_type = hints.get(param_name, str).__name__
+            ptype = hints.get(param_name, str)
+            if hasattr(ptype, "__name__"):
+                param_type = ptype.__name__
+            elif hasattr(ptype, "__origin__") and hasattr(ptype.__origin__, "__name__"):
+                param_type = ptype.__origin__.__name__
+            else:
+                param_type = str(ptype).replace("typing.", "")
+
             has_default = param.default is not inspect.Parameter.empty
 
             # Try to extract description from docstring
@@ -183,8 +191,8 @@ class FunctionTool(BaseTool):
 
 
 def tool(
-    name: Optional[str] = None,
-    description: Optional[str] = None,
+    name: str | None = None,
+    description: str | None = None,
     category: str = "general",
     requires_confirmation: bool = False,
 ) -> Callable:

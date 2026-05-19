@@ -3,9 +3,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
-from hivecore.skills.base import Skill, SkillManifest
+from hivecore.skills.base import Skill
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +29,7 @@ class SkillRegistry:
         self._skills[skill.name] = skill
         logger.debug("Registered skill: %s v%s", skill.name, skill.version)
 
-    def get(self, name: str) -> Optional[Skill]:
+    def get(self, name: str) -> Skill | None:
         """Get a skill by name."""
         return self._skills.get(name)
 

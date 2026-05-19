@@ -13,8 +13,10 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import time
-from typing import Any, AsyncIterator, Optional
+from collections.abc import AsyncIterator
+from typing import Any
 
 from hivecore.config.defaults import PERSONA_PROMPTS
 from hivecore.config.settings import HiveSettings
@@ -43,15 +45,15 @@ class Agent:
 
     def __init__(
         self,
-        settings: Optional[HiveSettings] = None,
-        llm_provider: Optional[LLMProvider] = None,
-        tool_registry: Optional[ToolRegistry] = None,
+        settings: HiveSettings | None = None,
+        llm_provider: LLMProvider | None = None,
+        tool_registry: ToolRegistry | None = None,
     ) -> None:
         self.settings = settings or HiveSettings()
         self._llm = llm_provider
         self._tools = tool_registry or ToolRegistry()
         self._conversation = Conversation()
-        self._memory_manager: Optional[Any] = None  # Initialized in initialize()
+        self._memory_manager: Any | None = None  # Initialized in initialize()
         self._initialized = False
 
     async def initialize(self) -> None:
@@ -99,6 +101,22 @@ class Agent:
         self._initialized = True
         logger.info("Agent initialized with model=%s, tools=%d",
                      self.settings.llm.model, len(self._tools))
+
+    def _redact_sensitive_info(self, text: str) -> str:
+        """Redact sensitive system paths if an external LLM is used."""
+        if not text:
+            return text
+
+        # Check if provider is external (not ollama or local)
+        is_external = self.settings.llm.provider not in ("ollama", "local")
+        if not is_external:
+            return text
+
+        # Regex for common sensitive paths or credentials
+        # Paths like /etc/shadow, /home/user/.ssh, /etc/passwd, keys, etc.
+        redacted = re.sub(r'(/etc/shadow|/etc/passwd|\~/\.ssh|/home/[^/]+/\.ssh)', '[REDACTED_SYSTEM_PATH]', text)
+        redacted = re.sub(r'(?i)(api[_-]?key|secret|password|token)\s*[:=]\s*["\']?[a-zA-Z0-9_\-\.]+["\']?', r'\1: [REDACTED_CREDENTIAL]', redacted)
+        return redacted
 
     async def run(self, user_input: str) -> Message:
         """Process a user message and return the agent's response.
@@ -192,9 +210,17 @@ class Agent:
         for iteration in range(max_iterations):
             logger.debug("ReAct iteration %d/%d", iteration + 1, max_iterations)
 
+            # Redact sensitive information before sending to LLM
+            safe_messages = []
+            for msg in self._conversation.messages:
+                safe_msg = Message(role=msg.role, content=self._redact_sensitive_info(msg.content))
+                if msg.tool_calls:
+                    safe_msg.tool_calls = msg.tool_calls
+                safe_messages.append(safe_msg)
+
             # Get LLM response
             response = await self._llm.complete(
-                messages=self._conversation.messages,
+                messages=safe_messages,
                 tools=tool_schemas,
             )
 

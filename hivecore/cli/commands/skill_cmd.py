@@ -1,6 +1,5 @@
 """Skill CLI command handler."""
 
-from typing import Optional
 
 from rich.console import Console
 from rich.table import Table
@@ -10,8 +9,8 @@ console = Console()
 
 def handle_skill(
     list_skills: bool = False,
-    install: Optional[str] = None,
-    info: Optional[str] = None,
+    install: str | None = None,
+    info: str | None = None,
 ) -> None:
     """Handle skill management commands."""
     from hivecore.skills.registry import SkillRegistry

@@ -22,7 +22,7 @@ from __future__ import annotations
 import datetime
 import logging
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from hivecore.memory.types import MemoryEntry, MemoryType
 
