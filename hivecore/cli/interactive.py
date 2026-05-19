@@ -1,6 +1,5 @@
 """Interactive chat session for the CLI."""
 
-from typing import Optional
 
 from rich.console import Console
 from rich.markdown import Markdown
@@ -10,8 +9,8 @@ console = Console()
 
 
 async def interactive_chat(
-    message: Optional[str] = None,
-    model_override: Optional[str] = None,
+    message: str | None = None,
+    model_override: str | None = None,
 ) -> None:
     """Run an interactive chat session with the agent.
 

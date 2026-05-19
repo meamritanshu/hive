@@ -18,7 +18,6 @@ Supported values
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 from hivecore.runtime.sandbox.base import ExecutionProvider
 

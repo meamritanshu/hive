@@ -24,10 +24,9 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-import sys
 import textwrap
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from hivecore.runtime.sandbox.base import ExecutionProvider
 
@@ -60,15 +59,15 @@ class DockerProvider(ExecutionProvider):
         timeout: int = 300,
         max_memory_mb: int = 256,
         allow_network: bool = False,
-        working_dir: Optional[Path] = None,
+        working_dir: Path | None = None,
     ) -> None:
         self.image = image
         self.timeout = timeout
         self.max_memory_mb = max_memory_mb
         self.allow_network = allow_network
         self.working_dir = working_dir
-        self._docker_available: Optional[bool] = None
-        self._fallback: Optional[ExecutionProvider] = None
+        self._docker_available: bool | None = None
+        self._fallback: ExecutionProvider | None = None
 
     # ------------------------------------------------------------------
     # ExecutionProvider interface
@@ -126,7 +125,7 @@ class DockerProvider(ExecutionProvider):
     ) -> dict[str, Any]:
         """Run *code* inside a fresh ``docker run --rm`` container."""
         docker_args = self._build_docker_args(code)
-        process: Optional[asyncio.subprocess.Process] = None
+        process: asyncio.subprocess.Process | None = None
 
         try:
             process = await asyncio.create_subprocess_exec(

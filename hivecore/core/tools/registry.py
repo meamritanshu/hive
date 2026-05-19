@@ -7,7 +7,7 @@ looked up by name for the agent's ReAct loop.
 from __future__ import annotations
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from hivecore.core.tools.base import BaseTool, FunctionTool, ToolDefinition
 
@@ -44,8 +44,8 @@ class ToolRegistry:
     def register_function(
         self,
         func: Any,
-        name: Optional[str] = None,
-        description: Optional[str] = None,
+        name: str | None = None,
+        description: str | None = None,
         category: str = "general",
     ) -> FunctionTool:
         """Register a plain function as a tool.
@@ -63,7 +63,7 @@ class ToolRegistry:
         self.register(tool)
         return tool
 
-    def get(self, name: str) -> Optional[BaseTool]:
+    def get(self, name: str) -> BaseTool | None:
         """Get a tool by name.
 
         Args:

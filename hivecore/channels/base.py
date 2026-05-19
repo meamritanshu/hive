@@ -8,7 +8,7 @@ API to this unified interface.
 from __future__ import annotations
 
 import abc
-from typing import Any, Optional
+from typing import Any
 
 
 class BaseChannel(abc.ABC):
@@ -38,7 +38,7 @@ class BaseChannel(abc.ABC):
     async def send_message(
         self,
         content: str,
-        recipient: Optional[str] = None,
+        recipient: str | None = None,
         **kwargs: Any,
     ) -> None:
         """Send a message through this channel.
@@ -54,8 +54,8 @@ class BaseChannel(abc.ABC):
     async def send_file(
         self,
         file_path: str,
-        recipient: Optional[str] = None,
-        caption: Optional[str] = None,
+        recipient: str | None = None,
+        caption: str | None = None,
         **kwargs: Any,
     ) -> None:
         """Send a file through this channel.

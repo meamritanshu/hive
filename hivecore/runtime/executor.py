@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Any, Optional
+from typing import Any
 
 from hivecore.core.tools.base import BaseTool
 from hivecore.core.tools.registry import ToolRegistry
@@ -32,9 +32,9 @@ class Executor:
 
     def __init__(
         self,
-        tool_registry: Optional[ToolRegistry] = None,
+        tool_registry: ToolRegistry | None = None,
         sandbox_type: str = "subprocess",
-        provider: Optional[ExecutionProvider] = None,
+        provider: ExecutionProvider | None = None,
         # Kept for backward compatibility — ignored when provider is supplied
         sandbox: Any = None,
     ) -> None:

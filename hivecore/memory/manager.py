@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from hivecore.config.settings import MemorySettings
 from hivecore.memory.git_sync import MemoryGitSync
@@ -43,10 +43,10 @@ class MemoryManager:
     - Hybrid retrieval (vector + BM25 keyword search)
     """
 
-    def __init__(self, settings: Optional[MemorySettings] = None) -> None:
+    def __init__(self, settings: MemorySettings | None = None) -> None:
         self.settings = settings or MemorySettings()
-        self._file_memory: Optional[FileMemory] = None
-        self._vector_memory: Optional[VectorMemory] = None
+        self._file_memory: FileMemory | None = None
+        self._vector_memory: VectorMemory | None = None
         # Session-keyed short-term buffers.  A "default" session is always
         # present for callers that do not supply a session_id.
         self._sessions: dict[str, ShortTermMemory] = {
@@ -60,10 +60,10 @@ class MemoryManager:
             bm25_weight=self.settings.bm25_weight,
         )
         self._bm25_index = BM25Index()
-        self._shadow_index: Optional[ShadowIndex] = None
-        self._embedder: Optional[EmbeddingGenerator] = None
+        self._shadow_index: ShadowIndex | None = None
+        self._embedder: EmbeddingGenerator | None = None
         self._compactor = MemoryCompactor()
-        self._git_sync: Optional[MemoryGitSync] = None
+        self._git_sync: MemoryGitSync | None = None
         self._initialized = False
 
     def get_session(self, session_id: str) -> ShortTermMemory:
@@ -228,8 +228,8 @@ class MemoryManager:
     async def retrieve(
         self,
         query: str,
-        top_k: Optional[int] = None,
-        memory_type: Optional[MemoryType] = None,
+        top_k: int | None = None,
+        memory_type: MemoryType | None = None,
     ) -> list[dict[str, Any]]:
         """Retrieve relevant memories using hybrid search.
 

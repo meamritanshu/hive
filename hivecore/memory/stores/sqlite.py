@@ -13,7 +13,7 @@ import logging
 import math
 import time
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import aiosqlite
 
@@ -29,7 +29,7 @@ class SQLiteVectorStore:
 
     def __init__(self, db_path: Path) -> None:
         self.db_path = db_path
-        self._db: Optional[aiosqlite.Connection] = None
+        self._db: aiosqlite.Connection | None = None
 
     async def initialize(self) -> None:
         """Create the database and tables."""
@@ -57,8 +57,8 @@ class SQLiteVectorStore:
         self,
         id: str,
         content: str,
-        embedding: Optional[list[float]] = None,
-        metadata: Optional[dict[str, Any]] = None,
+        embedding: list[float] | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """Insert or update a memory entry.
 
@@ -90,10 +90,10 @@ class SQLiteVectorStore:
 
     async def search(
         self,
-        query_embedding: Optional[list[float]] = None,
-        query_text: Optional[str] = None,
+        query_embedding: list[float] | None = None,
+        query_text: str | None = None,
         top_k: int = 10,
-        filter_metadata: Optional[dict[str, str]] = None,
+        filter_metadata: dict[str, str] | None = None,
     ) -> list[dict[str, Any]]:
         """Search for similar entries.
 
@@ -164,7 +164,7 @@ class SQLiteVectorStore:
 
     async def list_all(
         self,
-        filter_metadata: Optional[dict[str, str]] = None,
+        filter_metadata: dict[str, str] | None = None,
         limit: int = 100,
     ) -> list[dict[str, Any]]:
         """List all entries, optionally filtered."""
@@ -230,7 +230,7 @@ class ChromaDBStore:
     Provides better performance for large memory collections.
     """
 
-    def __init__(self, collection_name: str = "hivecore_memory", persist_dir: Optional[str] = None) -> None:
+    def __init__(self, collection_name: str = "hivecore_memory", persist_dir: str | None = None) -> None:
         self.collection_name = collection_name
         self.persist_dir = persist_dir
         self._client = None
@@ -260,8 +260,8 @@ class ChromaDBStore:
         self,
         id: str,
         content: str,
-        embedding: Optional[list[float]] = None,
-        metadata: Optional[dict[str, Any]] = None,
+        embedding: list[float] | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """Insert or update an entry."""
         assert self._collection is not None
@@ -282,10 +282,10 @@ class ChromaDBStore:
 
     async def search(
         self,
-        query_embedding: Optional[list[float]] = None,
-        query_text: Optional[str] = None,
+        query_embedding: list[float] | None = None,
+        query_text: str | None = None,
         top_k: int = 10,
-        filter_metadata: Optional[dict[str, str]] = None,
+        filter_metadata: dict[str, str] | None = None,
     ) -> list[dict[str, Any]]:
         """Search for similar entries."""
         assert self._collection is not None
@@ -325,7 +325,7 @@ class ChromaDBStore:
 
     async def list_all(
         self,
-        filter_metadata: Optional[dict[str, str]] = None,
+        filter_metadata: dict[str, str] | None = None,
         limit: int = 100,
     ) -> list[dict[str, Any]]:
         """List all entries."""

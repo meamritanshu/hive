@@ -7,7 +7,7 @@ configuration. Supports dynamic provider registration.
 from __future__ import annotations
 
 import logging
-from typing import Any, Optional, Type
+from typing import Any
 
 from hivecore.config.settings import LLMSettings
 from hivecore.core.llm.base import LLMProvider
@@ -15,10 +15,10 @@ from hivecore.core.llm.base import LLMProvider
 logger = logging.getLogger(__name__)
 
 # Registry of available providers
-_PROVIDER_REGISTRY: dict[str, Type[LLMProvider]] = {}
+_PROVIDER_REGISTRY: dict[str, type[LLMProvider]] = {}
 
 
-def register_provider(name: str, provider_class: Type[LLMProvider]) -> None:
+def register_provider(name: str, provider_class: type[LLMProvider]) -> None:
     """Register an LLM provider class.
 
     Args:

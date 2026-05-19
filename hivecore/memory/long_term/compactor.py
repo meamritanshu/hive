@@ -30,8 +30,8 @@ from __future__ import annotations
 
 import logging
 import time
-from datetime import datetime, timedelta, timezone
-from typing import Any, Optional
+from datetime import datetime, timezone
+from typing import Any
 
 from hivecore.core.messages import Message
 
@@ -300,7 +300,7 @@ class TieredMemoryCompactor:
                     source="weekly_compaction",
                 )
                 # Tag with tier and week for downstream processing
-                tier2_entry_dict = {
+                {
                     "id": tier2_entry.id,
                     "content": summary,
                     "mem_type": "episodic",

@@ -10,8 +10,9 @@ The heartbeat runs at a configurable interval and can:
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from datetime import datetime
-from typing import Any, Callable, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -27,12 +28,12 @@ class Heartbeat:
     def __init__(
         self,
         interval_seconds: int = 3600,
-        on_beat: Optional[Callable] = None,
+        on_beat: Callable | None = None,
     ) -> None:
         self.interval_seconds = interval_seconds
         self._on_beat = on_beat
         self._scheduler = None
-        self._last_beat: Optional[datetime] = None
+        self._last_beat: datetime | None = None
         self._beat_count: int = 0
 
     def start(self, scheduler: Any) -> None:

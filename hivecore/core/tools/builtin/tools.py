@@ -6,10 +6,8 @@ These are the default tools available to the agent out of the box.
 from __future__ import annotations
 
 import datetime
-import os
 import subprocess
 from pathlib import Path
-from typing import Optional
 
 from hivecore.core.tools.base import tool
 
@@ -87,7 +85,7 @@ def list_directory(path: str = ".", show_hidden: bool = False) -> str:
 
 @tool(name="run_shell", description="Execute a shell command and return its output.",
       category="system", requires_confirmation=True)
-def run_shell(command: str, timeout: int = 60, working_dir: Optional[str] = None) -> str:
+def run_shell(command: str, timeout: int = 60, working_dir: str | None = None) -> str:
     """Execute a shell command.
 
     Args:
@@ -212,13 +210,12 @@ def _parse_ddg_lite(html: str, max_results: int) -> list[str]:
     return results
 
 
-def register_builtin_tools(registry: "ToolRegistry") -> None:
+def register_builtin_tools(registry: ToolRegistry) -> None:
     """Register all built-in tools with a ToolRegistry.
 
     Args:
         registry: The registry to add tools to.
     """
-    from hivecore.core.tools.registry import ToolRegistry
 
     builtin_tools = [
         read_file,

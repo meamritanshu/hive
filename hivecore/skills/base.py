@@ -41,11 +41,11 @@ isolated virtual environment dedicated to that skill before execution.
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Optional
+from typing import Any
 
 from hivecore.core.tools.base import FunctionTool
-
 
 # ---------------------------------------------------------------------------
 # Valid permission tokens
@@ -106,7 +106,7 @@ class SkillContext:
         skill_name: str,
         declared_permissions: list[str],
         secrets_source: dict[str, str],
-    ) -> "SkillContext":
+    ) -> SkillContext:
         """Build a SkillContext by filtering *secrets_source* to only the
         secrets the skill has declared it needs.
 
@@ -157,7 +157,7 @@ def parse_requirements_header(source: str) -> list[str]:
 def ensure_requirements(
     requirements: list[str],
     skill_name: str,
-    venv_dir: Optional[str] = None,
+    venv_dir: str | None = None,
 ) -> None:
     """Install *requirements* into the skill's isolated virtual environment.
 
@@ -266,8 +266,8 @@ class Skill:
     def __init__(
         self,
         manifest: SkillManifest,
-        tools: Optional[list[FunctionTool]] = None,
-        config: Optional[dict[str, Any]] = None,
+        tools: list[FunctionTool] | None = None,
+        config: dict[str, Any] | None = None,
     ) -> None:
         self.manifest = manifest
         self.tools = tools or []
@@ -337,13 +337,13 @@ class Skill:
 # ---------------------------------------------------------------------------
 
 def skill(
-    name: Optional[str] = None,
-    description: Optional[str] = None,
+    name: str | None = None,
+    description: str | None = None,
     version: str = "0.1.0",
     author: str = "unknown",
-    dependencies: Optional[list[str]] = None,
-    permissions: Optional[list[str]] = None,
-    tags: Optional[list[str]] = None,
+    dependencies: list[str] | None = None,
+    permissions: list[str] | None = None,
+    tags: list[str] | None = None,
 ) -> Callable:
     """Decorator to create a Skill from a Python function.
 

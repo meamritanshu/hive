@@ -6,8 +6,6 @@ and relevant memory context.
 
 from __future__ import annotations
 
-from typing import Any, Optional
-
 from hivecore.config.defaults import REACT_SYSTEM_TEMPLATE
 from hivecore.core.tools.base import ToolDefinition
 
@@ -15,7 +13,7 @@ from hivecore.core.tools.base import ToolDefinition
 def build_system_prompt(
     agent_name: str = "HiveCore",
     persona_prompt: str = "",
-    tools: Optional[list[ToolDefinition]] = None,
+    tools: list[ToolDefinition] | None = None,
     memory_context: str = "",
 ) -> str:
     """Build the complete system prompt for the agent.

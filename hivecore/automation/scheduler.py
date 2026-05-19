@@ -8,9 +8,10 @@ from __future__ import annotations
 
 import logging
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Callable, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -24,11 +25,11 @@ class ScheduledJob:
     cron_expr: str = ""
     skill_name: str = ""
     params: dict[str, Any] = field(default_factory=dict)
-    channel: Optional[str] = None
+    channel: str | None = None
     enabled: bool = True
-    next_run: Optional[datetime] = None
-    last_run: Optional[datetime] = None
-    last_result: Optional[str] = None
+    next_run: datetime | None = None
+    last_run: datetime | None = None
+    last_result: str | None = None
 
 
 class Scheduler:
@@ -41,7 +42,7 @@ class Scheduler:
     def __init__(self) -> None:
         self._scheduler = None
         self._jobs: dict[str, ScheduledJob] = {}
-        self._skill_executor: Optional[Callable] = None
+        self._skill_executor: Callable | None = None
 
     def start(self) -> None:
         """Start the scheduler."""
@@ -79,8 +80,8 @@ class Scheduler:
         name: str,
         cron_expr: str,
         skill_name: str,
-        params: Optional[dict[str, Any]] = None,
-        channel: Optional[str] = None,
+        params: dict[str, Any] | None = None,
+        channel: str | None = None,
     ) -> str:
         """Add a scheduled job.
 

@@ -9,7 +9,6 @@ from __future__ import annotations
 import asyncio
 import logging
 import signal
-from typing import Optional
 
 from hivecore.config.settings import HiveSettings, get_settings
 
@@ -20,7 +19,7 @@ async def start_workstation(
     host: str = "127.0.0.1",
     port: int = 8088,
     no_web: bool = False,
-    config_path: Optional[str] = None,
+    config_path: str | None = None,
 ) -> None:
     """Start the HiveCore workstation.
 
@@ -73,6 +72,15 @@ async def start_workstation(
         from hivecore.automation.scheduler import Scheduler
 
         scheduler = Scheduler()
+
+        async def _skill_executor(skill_name: str, params: dict) -> str:
+            # ReAct loop or just run the tool directly
+            tool = agent._tools.get(skill_name)
+            if tool:
+                return await tool.execute(**params)
+            return f"Error: Skill {skill_name} not found"
+
+        scheduler.set_skill_executor(_skill_executor)
         scheduler.start()
         logger.info("Scheduler started.")
 
@@ -111,7 +119,7 @@ async def start_workstation(
 async def _start_web_server(
     host: str,
     port: int,
-    agent: "Agent",
+    agent: Agent,
     settings: HiveSettings,
 ) -> None:
     """Start the FastAPI web console."""
@@ -131,7 +139,7 @@ async def _start_web_server(
     await server.serve()
 
 
-async def _start_channels(settings: HiveSettings, agent: "Agent") -> None:
+async def _start_channels(settings: HiveSettings, agent: Agent) -> None:
     """Start configured communication channels."""
     from hivecore.channels.router import ChannelRouter
 

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from hivecore.channels.base import BaseChannel
 
@@ -37,7 +37,11 @@ class ChannelRouter:
             name: Channel identifier.
             channel: The channel instance.
         """
-        channel.set_message_handler(self._handle_incoming)
+        # Wrap in a task dispatcher so we don't block the channel's receive loop
+        async def _dispatch(*args: Any, **kwargs: Any) -> None:
+            asyncio.create_task(self._handle_incoming(*args, **kwargs))
+
+        channel.set_message_handler(_dispatch)
         self._channels[name] = channel
         logger.debug("Registered channel: %s", name)
 
@@ -116,7 +120,7 @@ class ChannelRouter:
         self,
         channel_name: str,
         content: str,
-        recipient: Optional[str] = None,
+        recipient: str | None = None,
     ) -> bool:
         """Send a message to a specific channel (for scheduled tasks).
 

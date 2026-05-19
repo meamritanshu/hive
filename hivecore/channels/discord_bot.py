@@ -7,7 +7,7 @@ Requires: pip install hivecore[discord]
 from __future__ import annotations
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from hivecore.channels.base import BaseChannel
 
@@ -24,7 +24,7 @@ class DiscordChannel(BaseChannel):
     def __init__(
         self,
         token: str,
-        guild_ids: Optional[list[str]] = None,
+        guild_ids: list[str] | None = None,
     ) -> None:
         self._token = token
         self._guild_ids = guild_ids or []
@@ -92,7 +92,7 @@ class DiscordChannel(BaseChannel):
     async def send_message(
         self,
         content: str,
-        recipient: Optional[str] = None,
+        recipient: str | None = None,
         **kwargs: Any,
     ) -> None:
         """Send a message to a Discord channel."""
@@ -109,8 +109,8 @@ class DiscordChannel(BaseChannel):
     async def send_file(
         self,
         file_path: str,
-        recipient: Optional[str] = None,
-        caption: Optional[str] = None,
+        recipient: str | None = None,
+        caption: str | None = None,
         **kwargs: Any,
     ) -> None:
         """Send a file to a Discord channel."""
@@ -134,7 +134,7 @@ class TelegramChannel(BaseChannel):
     def __init__(
         self,
         token: str,
-        allowed_chat_ids: Optional[list[int]] = None,
+        allowed_chat_ids: list[int] | None = None,
     ) -> None:
         self._token = token
         self._allowed_chat_ids = allowed_chat_ids or []
@@ -195,7 +195,7 @@ class TelegramChannel(BaseChannel):
     async def send_message(
         self,
         content: str,
-        recipient: Optional[str] = None,
+        recipient: str | None = None,
         **kwargs: Any,
     ) -> None:
         """Send a message to a Telegram chat."""
@@ -209,8 +209,8 @@ class TelegramChannel(BaseChannel):
     async def send_file(
         self,
         file_path: str,
-        recipient: Optional[str] = None,
-        caption: Optional[str] = None,
+        recipient: str | None = None,
+        caption: str | None = None,
         **kwargs: Any,
     ) -> None:
         """Send a file to a Telegram chat."""

@@ -15,7 +15,7 @@ import asyncio
 import json
 import logging
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 class ChatRequest(BaseModel):
     message: str
-    conversation_id: Optional[str] = None
+    conversation_id: str | None = None
 
 
 class ChatResponse(BaseModel):
@@ -55,7 +55,7 @@ class ConfigUpdateRequest(BaseModel):
     updates: dict[str, Any]
 
 
-def create_app(agent: Any = None, settings: Optional[HiveSettings] = None) -> FastAPI:
+def create_app(agent: Any = None, settings: HiveSettings | None = None) -> FastAPI:
     """Create and configure the FastAPI application.
 
     Args:
@@ -279,7 +279,6 @@ def create_app(agent: Any = None, settings: Optional[HiveSettings] = None) -> Fa
         response can be flushed to the client first.  On Windows the process
         exits and must be restarted manually (or via a process supervisor).
         """
-        import asyncio
         import os
         import signal
 

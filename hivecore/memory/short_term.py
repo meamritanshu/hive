@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import logging
 from collections import deque
-from typing import Optional
 
 from hivecore.core.messages import Message, Role
 
@@ -31,7 +30,7 @@ class ShortTermMemory:
         self.max_messages = max_messages
         self.compaction_token_threshold = compaction_token_threshold
         self._messages: deque[Message] = deque(maxlen=max_messages)
-        self._system_message: Optional[Message] = None
+        self._system_message: Message | None = None
 
     def add(self, message: Message) -> None:
         """Add a message to the buffer.

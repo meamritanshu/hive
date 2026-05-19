@@ -37,11 +37,11 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
-_DUCKDB_AVAILABLE: Optional[bool] = None
+_DUCKDB_AVAILABLE: bool | None = None
 
 
 def _check_duckdb() -> bool:
@@ -199,7 +199,7 @@ class ShadowIndex:
         self,
         query: str,
         top_k: int = 10,
-        mem_type: Optional[str] = None,
+        mem_type: str | None = None,
     ) -> list[dict[str, Any]]:
         """Full-text search over the shadow index.
 
@@ -228,7 +228,7 @@ class ShadowIndex:
                 return []
 
     def _fts_search(
-        self, query: str, top_k: int, mem_type: Optional[str]
+        self, query: str, top_k: int, mem_type: str | None
     ) -> list[dict[str, Any]]:
         """Search using DuckDB's built-in FTS MATCH operator."""
         type_filter = "AND mem_type = ?" if mem_type else ""
@@ -253,7 +253,7 @@ class ShadowIndex:
         ]
 
     def _like_search(
-        self, query: str, top_k: int, mem_type: Optional[str]
+        self, query: str, top_k: int, mem_type: str | None
     ) -> list[dict[str, Any]]:
         """Fallback full-text search using LIKE pattern matching."""
         terms = query.lower().split()
@@ -261,7 +261,7 @@ class ShadowIndex:
             return []
 
         conditions = " AND ".join(
-            f"lower(content) LIKE ?" for _ in terms
+            "lower(content) LIKE ?" for _ in terms
         )
         params: list[Any] = [f"%{t}%" for t in terms]
         type_filter = ""

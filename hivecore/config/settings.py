@@ -8,9 +8,12 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
-from pydantic import BaseModel, Field
+try:
+    from pydantic import BaseModel, Field
+except ImportError:
+    pass
 
 # Default data directory
 DEFAULT_DATA_DIR = Path.home() / ".hivecore"
@@ -25,8 +28,8 @@ class LLMSettings(BaseModel):
         default="litellm",
         description="LLM provider (litellm, openai, anthropic, google, ollama).",
     )
-    api_key: Optional[str] = Field(default=None, description="API key for the LLM provider.")
-    api_base: Optional[str] = Field(default=None, description="Custom API base URL.")
+    api_key: str | None = Field(default=None, description="API key for the LLM provider.")
+    api_base: str | None = Field(default=None, description="Custom API base URL.")
     temperature: float = Field(default=0.7, ge=0.0, le=2.0, description="Sampling temperature.")
     max_tokens: int = Field(default=4096, gt=0, description="Max tokens per response.")
     streaming: bool = Field(default=True, description="Enable streaming responses.")
@@ -123,7 +126,7 @@ class ChannelConfig(BaseModel):
     """Base configuration for a communication channel."""
 
     enabled: bool = Field(default=False, description="Whether this channel is enabled.")
-    token: Optional[str] = Field(default=None, description="Auth token for the channel.")
+    token: str | None = Field(default=None, description="Auth token for the channel.")
 
 
 class DiscordChannelConfig(ChannelConfig):
@@ -207,10 +210,10 @@ class HiveSettings(BaseModel):
 
 # --- Settings persistence ---
 
-_cached_settings: Optional[HiveSettings] = None
+_cached_settings: HiveSettings | None = None
 
 
-def get_settings(config_path: Optional[Path] = None) -> HiveSettings:
+def get_settings(config_path: Path | None = None) -> HiveSettings:
     """Load settings from TOML config file, with caching.
 
     Args:
@@ -243,7 +246,7 @@ def get_settings(config_path: Optional[Path] = None) -> HiveSettings:
     return settings
 
 
-def save_settings(settings: HiveSettings, config_path: Optional[Path] = None) -> None:
+def save_settings(settings: HiveSettings, config_path: Path | None = None) -> None:
     """Save settings to TOML config file.
 
     Args:

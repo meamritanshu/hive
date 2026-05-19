@@ -17,11 +17,15 @@ On load the loader:
 
 from __future__ import annotations
 
+import asyncio
 import importlib.util
 import logging
 import sys
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
+
+from watchdog.events import FileCreatedEvent, FileModifiedEvent, FileSystemEventHandler
+from watchdog.observers import Observer
 
 from hivecore.skills.base import (
     Skill,
@@ -36,6 +40,17 @@ logger = logging.getLogger(__name__)
 # Override globally via SkillsSettings or per-skill via <name>.toml.
 DEFAULT_ALLOWED_PERMISSIONS: frozenset[str] = frozenset()
 
+
+class _SkillWatchdogHandler(FileSystemEventHandler):
+    def __init__(self, loader: SkillLoader, loop: asyncio.AbstractEventLoop):
+        self.loader = loader
+        self.loop = loop
+
+    def on_modified(self, event: Any) -> None:
+        if isinstance(event, (FileModifiedEvent, FileCreatedEvent)) and event.src_path.endswith(".py"):
+            path = Path(event.src_path)
+            # Only trigger reload for skills, ignoring double triggers
+            asyncio.run_coroutine_threadsafe(self.loader._handle_file_change(path), self.loop)
 
 class SkillLoader:
     """Discovers and loads skills from the filesystem.
@@ -63,9 +78,10 @@ class SkillLoader:
 
     def __init__(
         self,
-        skill_dirs: Optional[list[Path]] = None,
-        allowed_permissions: Optional[frozenset[str]] = None,
+        skill_dirs: list[Path] | None = None,
+        allowed_permissions: frozenset[str] | None = None,
         install_requirements: bool = True,
+        hot_reload: bool = False,
     ) -> None:
         self._skill_dirs = skill_dirs or []
         self._allowed_permissions = (
@@ -74,7 +90,13 @@ class SkillLoader:
             else DEFAULT_ALLOWED_PERMISSIONS
         )
         self._install_requirements = install_requirements
+        self._hot_reload = hot_reload
         self._loaded_skills: dict[str, Skill] = {}
+        self._observer: Observer | None = None
+        self._on_skill_loaded_callbacks: list[Any] = []
+
+    def on_skill_loaded(self, callback: Any) -> None:
+        self._on_skill_loaded_callbacks.append(callback)
 
     def add_directory(self, path: Path) -> None:
         """Add a skill directory to scan."""
@@ -126,9 +148,43 @@ class SkillLoader:
         logger.info(
             "Loaded %d skills from %d directories", len(skills), len(self._skill_dirs)
         )
+
+        if self._hot_reload and self._observer is None:
+            self._start_watchdog()
+
         return skills
 
-    async def _load_file_skill(self, path: Path) -> Optional[Skill]:
+    def _start_watchdog(self) -> None:
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            logger.warning("No running event loop found, cannot start watchdog")
+            return
+
+        self._observer = Observer()
+        handler = _SkillWatchdogHandler(self, loop)
+        for skill_dir in self._skill_dirs:
+            if skill_dir.exists():
+                self._observer.schedule(handler, str(skill_dir), recursive=True)
+
+        self._observer.start()
+        logger.info("Watchdog started for skill directories")
+
+    async def _handle_file_change(self, path: Path) -> None:
+        # Debounce/reload skill
+        # Check if it's a file skill or directory skill
+        logger.info("Detected change in %s, reloading...", path)
+        if path.parent in self._skill_dirs:
+            loaded = await self._load_file_skill(path)
+        else:
+            loaded = await self._load_dir_skill(path.parent)
+
+        if loaded:
+            self._loaded_skills[loaded.name] = loaded
+            for cb in self._on_skill_loaded_callbacks:
+                cb(loaded)
+
+    async def _load_file_skill(self, path: Path) -> Skill | None:
         """Load a skill from a single Python file.
 
         Steps:
@@ -175,7 +231,7 @@ class SkillLoader:
             return None
 
         # Find Skill instances or factories
-        found: Optional[Skill] = None
+        found: Skill | None = None
         for attr_name in dir(module):
             attr = getattr(module, attr_name)
             if isinstance(attr, Skill):
@@ -210,7 +266,7 @@ class SkillLoader:
 
         return found
 
-    async def _load_dir_skill(self, path: Path) -> Optional[Skill]:
+    async def _load_dir_skill(self, path: Path) -> Skill | None:
         """Load a skill from a directory with a skill.toml manifest."""
         manifest_path = path / "skill.toml"
         manifest = self._load_manifest(manifest_path)
@@ -256,7 +312,7 @@ class SkillLoader:
             return None
 
         # Find the Skill or create one from the manifest
-        found: Optional[Skill] = None
+        found: Skill | None = None
         for attr_name in dir(module):
             attr = getattr(module, attr_name)
             if isinstance(attr, Skill):
@@ -274,7 +330,7 @@ class SkillLoader:
 
         return found
 
-    def _load_allowlist(self, directory: Path, skill_name: str) -> Optional[frozenset[str]]:
+    def _load_allowlist(self, directory: Path, skill_name: str) -> frozenset[str] | None:
         """Load per-skill permission allow-list from ``<skill_name>.toml``.
 
         Returns None if no allow-list file exists (falls back to global default).
@@ -299,7 +355,7 @@ class SkillLoader:
             return None
 
     def _check_permissions(
-        self, skill: Skill, allow_list: Optional[frozenset[str]]
+        self, skill: Skill, allow_list: frozenset[str] | None
     ) -> bool:
         """Return True if all of the skill's declared permissions are allowed.
 
@@ -332,7 +388,7 @@ class SkillLoader:
 
         return True
 
-    def _load_manifest(self, path: Path) -> Optional[SkillManifest]:
+    def _load_manifest(self, path: Path) -> SkillManifest | None:
         """Load a skill.toml manifest file."""
         if not path.exists():
             return None
@@ -359,7 +415,7 @@ class SkillLoader:
             logger.error("Failed to parse skill manifest %s: %s", path, e)
             return None
 
-    async def reload_skill(self, name: str) -> Optional[Skill]:
+    async def reload_skill(self, name: str) -> Skill | None:
         """Reload a specific skill by name.
 
         Args:
@@ -389,6 +445,11 @@ class SkillLoader:
 
     async def unload_all(self) -> None:
         """Unload all skills."""
+        if self._observer:
+            self._observer.stop()
+            self._observer.join()
+            self._observer = None
+
         for s in self._loaded_skills.values():
             try:
                 await s.on_unload()
