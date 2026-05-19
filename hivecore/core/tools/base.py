@@ -137,7 +137,14 @@ class FunctionTool(BaseTool):
             if param_name in ("self", "cls"):
                 continue
 
-            param_type = hints.get(param_name, str).__name__
+            ptype = hints.get(param_name, str)
+            if hasattr(ptype, "__name__"):
+                param_type = ptype.__name__
+            elif hasattr(ptype, "__origin__") and hasattr(ptype.__origin__, "__name__"):
+                param_type = ptype.__origin__.__name__
+            else:
+                param_type = str(ptype).replace("typing.", "")
+
             has_default = param.default is not inspect.Parameter.empty
 
             # Try to extract description from docstring
