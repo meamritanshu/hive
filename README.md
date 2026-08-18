@@ -386,5 +386,5 @@ This project is licensed under the **Apache License 2.0** — see the [pyproject
 ---
 
 <p align="center">
-  Built with ❤️ - by the HiveCore Team
+  Built with ❤️ by the HiveCore Team
 </p>
