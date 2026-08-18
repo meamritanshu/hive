@@ -169,7 +169,8 @@ This document outlines planned improvements, features, and architectural changes
 
 ## Contributing
 
-We welcome contributions in all areas. If you're interested in working on any of these features, please:
+We welcome contributions in all areas.
+If you're interested in working on any of these features, please:
 
 1. Open an issue to discuss the approach
 2. Reference this roadmap in your PR
